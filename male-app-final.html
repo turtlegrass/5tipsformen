@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANANNA Embodiment: Companion App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────── */
+:root {
+  --ink:       #20128c;
+  --ink-deep:  #140b5e;
+  --ink-mid:   #2d1fa3;
+  --ink-light: #4535c1;
+  --ink-mist:  rgba(32,18,140,.08);
+  --cream:     #f7f2ea;
+  --cream-dim: #ede6d8;
+  --gold:      #b89a5a;
+  --gold-pale: #e8d9b5;
+  --white:     #ffffff;
+  --on-dark:   #e8e2f5;
+  --on-dark-2: rgba(232,226,245,.55);
+  --radius-sm: 8px;
+  --radius:    14px;
+  --radius-lg: 22px;
+  --dur:        .28s;
+  --ease:       cubic-bezier(.4,0,.2,1);
+}
+
+/* ─── RESET ──────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);
+  color:#1a1320;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+
+/* ─── GRAIN OVERLAY ──────────────────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:.35;
+}
+
+/* ─── TYPOGRAPHY ─────────────────────────────────────────── */
+h1,h2,h3,h4{font-family:'DM Serif Display',serif;font-weight:400;line-height:1.15}
+
+/* ─── NAV ────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  background:rgba(247,242,234,.9);
+  backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border-bottom:1px solid var(--cream-dim);
+  transition:background var(--dur) var(--ease);
+}
+.nav-inner{
+  max-width:960px;margin:0 auto;padding:0 1.5rem;
+  height:62px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:'DM Serif Display',serif;
+  font-size:1.15rem;letter-spacing:.02em;
+  color:var(--ink);
+}
+.nav-brand span{color:var(--gold);font-style:italic}
+.nav-links{display:flex;gap:.15rem}
+.nav-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;
+  letter-spacing:.04em;text-transform:uppercase;
+  color:#6b6280;padding:.45rem .8rem;border-radius:6px;
+  transition:color var(--dur),background var(--dur);
+  position:relative;
+}
+.nav-btn::after{
+  content:'';position:absolute;bottom:4px;left:.8rem;right:.8rem;
+  height:1.5px;background:var(--ink);border-radius:2px;
+  transform:scaleX(0);transform-origin:left;
+  transition:transform var(--dur) var(--ease);
+}
+.nav-btn:hover{color:var(--ink);background:var(--ink-mist)}
+.nav-btn.active{color:var(--ink)}
+.nav-btn.active::after{transform:scaleX(1)}
+@media(max-width:520px){
+  .nav-btn .lbl{display:none}
+  .nav-btn .ico{display:inline}
+  .nav-btn{padding:.45rem .6rem;font-size:1rem}
+}
+@media(min-width:521px){
+  .nav-btn .ico{display:none}
+}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+#home{
+  min-height:100vh;
+  background:var(--ink-deep);
+  display:flex;align-items:center;justify-content:center;
+  padding:6rem 1.5rem 4rem;
+  position:relative;overflow:hidden;
+}
+#home::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 50%, rgba(69,53,193,.35) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(45,31,163,.4) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 60% 10%, rgba(184,154,90,.08) 0%, transparent 50%);
+}
+.hero-ring{
+  position:absolute;
+  border:1px solid rgba(232,226,245,.06);
+  border-radius:50%;
+  pointer-events:none;
+}
+.ring-1{width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)}
+.ring-2{width:750px;height:750px;top:50%;left:50%;transform:translate(-50%,-50%)}
+.ring-3{width:1050px;height:1050px;top:50%;left:50%;transform:translate(-50%,-50%)}
+.hero-inner{position:relative;max-width:680px;text-align:center}
+.hero-eyebrow{
+  display:inline-block;
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(184,154,90,.35);
+  padding:.35rem 1.1rem;border-radius:999px;margin-bottom:2rem;
+}
+.hero-inner h1{
+  font-size:clamp(2.6rem,6vw,4rem);
+  color:var(--white);margin-bottom:.6rem;
+  text-shadow:0 2px 40px rgba(32,18,140,.6);
+}
+.hero-inner h1 em{color:var(--gold-pale);font-style:italic}
+.hero-tagline{
+  font-size:1.05rem;color:var(--on-dark-2);
+  max-width:480px;margin:0 auto 3rem;font-weight:300;
+}
+.stats-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;
+  margin-bottom:2.5rem;
+}
+@media(max-width:480px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-pill{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--radius);padding:.9rem .5rem;
+  transition:background var(--dur);
+}
+.stat-pill:hover{background:rgba(255,255,255,.1)}
+.stat-n{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--white)}
+.stat-l{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--on-dark-2)}
+.cta-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-hero{
+  font-family:'DM Sans',sans-serif;font-weight:500;font-size:.95rem;
+  padding:.85rem 2.2rem;border-radius:999px;border:none;cursor:pointer;
+  transition:all .22s var(--ease);letter-spacing:.02em;
+}
+.btn-hero-fill{background:var(--gold);color:var(--ink-deep)}
+.btn-hero-fill:hover{background:#c9a96e;transform:translateY(-1px);box-shadow:0 8px 24px rgba(184,154,90,.35)}
+.btn-hero-ghost{background:transparent;color:var(--on-dark);border:1px solid rgba(232,226,245,.25)}
+.btn-hero-ghost:hover{background:rgba(255,255,255,.08);transform:translateY(-1px)}
+
+/* ─── SECTION WRAPPER ────────────────────────────────────── */
+section{scroll-margin-top:62px;padding:5.5rem 1.5rem}
+.s-inner{max-width:960px;margin:0 auto}
+.s-header{margin-bottom:3rem}
+.s-label{
+  font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);font-weight:600;margin-bottom:.6rem;display:block;
+}
+.s-title{font-size:clamp(1.8rem,3.5vw,2.5rem);color:var(--ink-deep)}
+.s-sub{font-size:.95rem;color:#6b6280;margin-top:.5rem;font-weight:300}
+.divider{width:48px;height:2px;background:var(--gold);border-radius:2px;margin-top:1rem}
+
+/* ─── LEARN ──────────────────────────────────────────────── */
+#learn{background:var(--cream)}
+.acc-list{display:flex;flex-direction:column;gap:.6rem}
+.acc-item{
+  background:var(--white);
+  border:1px solid var(--cream-dim);
+  border-radius:var(--radius);overflow:hidden;
+  transition:box-shadow var(--dur),border-color var(--dur);
+}
+.acc-item:hover{box-shadow:0 4px 24px rgba(32,18,140,.08);border-color:rgba(32,18,140,.15)}
+.acc-item.open{border-color:rgba(32,18,140,.2);box-shadow:0 4px 32px rgba(32,18,140,.1)}
+.acc-trigger{
+  width:100%;padding:1.4rem 1.6rem;background:none;
+  border:none;cursor:pointer;text-align:left;
+  display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;
+}
+.acc-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--ink-mist);color:var(--ink);
+  font-size:.72rem;font-weight:600;letter-spacing:.04em;
+  flex-shrink:0;margin-right:.9rem;
+}
+.acc-texts{flex:1}
+.acc-heading{display:flex;align-items:center}
+.acc-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--ink-deep)}
+.acc-sub{font-size:.8rem;color:#9490a0;margin-top:.2rem;font-weight:300}
+.acc-chevron{
+  width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--cream-dim);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink);font-size:.75rem;flex-shrink:0;
+  transition:transform var(--dur),background var(--dur);
+}
+.acc-item.open .acc-chevron{transform:rotate(180deg);background:var(--ink);color:var(--white);border-color:var(--ink)}
+.acc-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .4s var(--ease);
+}
+.acc-body-inner{
+  padding:0 1.6rem 1.6rem;
+  border-top:1px solid var(--cream-dim);
+  padding-top:1.25rem;
+}
+.acc-summary{font-size:.9rem;color:#4a4060;line-height:1.7;margin-bottom:1.1rem}
+.takeaways{background:linear-gradient(135deg,rgba(32,18,140,.04),rgba(32,18,140,.02));border-left:3px solid var(--ink);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:1rem 1.2rem}
+.takeaways strong{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:600;display:block;margin-bottom:.6rem}
+.takeaways ul{list-style:none}
+.takeaways li{font-size:.875rem;color:#3a3560;padding:.3rem 0;display:flex;gap:.6rem;align-items:baseline}
+.takeaways li::before{content:'·';color:var(--gold);font-weight:600;flex-shrink:0}
+
+/* ─── PRACTICE ───────────────────────────────────────────── */
+#practice{background:var(--ink-deep);position:relative;overflow:hidden}
+#practice::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 90% 20%, rgba(69,53,193,.25) 0%, transparent 65%);
+}
+#practice .s-title{color:var(--white)}
+#practice .s-sub{color:var(--on-dark-2)}
+#practice .s-label{color:var(--gold)}
+.ex-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));position:relative}
+.ex-card{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--radius);padding:1.5rem;
+  transition:background var(--dur),border-color var(--dur),transform var(--dur);
+  cursor:default;
+}
+.ex-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);transform:translateY(-2px)}
+.ex-tag{
+  display:inline-block;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(184,154,90,.3);
+  border-radius:999px;padding:.2rem .6rem;margin-bottom:.75rem;
+}
+.ex-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--white);margin-bottom:.2rem}
+.ex-dur{font-size:.75rem;color:var(--on-dark-2);margin-bottom:.8rem;display:flex;align-items:center;gap:.35rem}
+.ex-dur::before{content:'';width:14px;height:1px;background:var(--on-dark-2);display:inline-block}
+.ex-desc{font-size:.835rem;color:rgba(232,226,245,.65);line-height:1.6;margin-bottom:1rem;font-weight:300}
+.ex-steps{display:flex;flex-direction:column;gap:.45rem}
+.ex-step{display:flex;gap:.65rem;align-items:flex-start;font-size:.8rem;color:rgba(232,226,245,.6)}
+.step-n{
+  min-width:20px;height:20px;border-radius:50%;
+  background:rgba(184,154,90,.2);color:var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:600;flex-shrink:0;margin-top:.1rem;
+}
+.ex-prompt{font-size:.8rem;color:rgba(232,226,245,.6);font-style:italic;line-height:1.55;padding:.2rem 0}
+.ex-prompt::before{content:'→ ';color:var(--gold);font-style:normal}
+.done-btn{
+  display:flex;align-items:center;gap:.4rem;
+  margin-top:1.1rem;font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;
+  font-family:'DM Sans',sans-serif;font-weight:600;
+  background:none;border:1px solid rgba(255,255,255,.18);
+  color:rgba(232,226,245,.7);border-radius:999px;
+  padding:.4rem 1rem;cursor:pointer;width:fit-content;
+  transition:all var(--dur);
+}
+.done-btn:hover{background:rgba(255,255,255,.08)}
+.done-btn.done{background:rgba(184,154,90,.2);border-color:var(--gold);color:var(--gold)}
+.done-btn .chk{width:16px;height:16px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.6rem}
+
+/* ─── COMPASS ────────────────────────────────────────────── */
+#compass{background:var(--cream)}
+.compass-layout{display:grid;gap:2rem;grid-template-columns:1fr 1fr}
+@media(max-width:680px){.compass-layout{grid-template-columns:1fr}}
+.compass-sliders{background:var(--white);border:1px solid var(--cream-dim);border-radius:var(--radius-lg);padding:2rem}
+.compass-sliders h3{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--ink-deep);margin-bottom:.35rem}
+.compass-sliders p{font-size:.85rem;color:#9490a0;margin-bottom:1.75rem;font-weight:300}
+.slider-block{margin-bottom:1.4rem}
+.slider-label{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:.55rem;font-size:.82rem;font-weight:500;color:#3a3560;
+}
+.slider-val{
+  font-size:.78rem;font-weight:600;color:var(--ink);
+  background:var(--ink-mist);padding:.15rem .55rem;border-radius:999px;
+  min-width:2.8rem;text-align:center;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;
+  height:4px;border-radius:4px;background:var(--cream-dim);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--ink);border:3px solid var(--white);
+  box-shadow:0 0 0 1px var(--ink),0 2px 8px rgba(32,18,140,.3);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--ink);border:3px solid var(--white);cursor:pointer;
+}
+.btn-checkin{
+  width:100%;margin-top:.5rem;
+  padding:.9rem;border:none;border-radius:var(--radius);cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase;
+  background:var(--ink);color:var(--white);
+  transition:background var(--dur),transform var(--dur),box-shadow var(--dur);
+}
+.btn-checkin:hover{background:var(--ink-mid);transform:translateY(-1px);box-shadow:0 8px 24px rgba(32,18,140,.25)}
+.compass-right{display:flex;flex-direction:column;gap:1.5rem}
+.radar-card{background:var(--ink-deep);border-radius:var(--radius-lg);padding:2rem;display:flex;flex-direction:column;align-items:center}
+.radar-card-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--on-dark);margin-bottom:1.25rem;align-self:flex-start}
+svg.radar{overflow:visible}
+.history-panel{background:var(--white);border:1px solid var(--cream-dim);border-radius:var(--radius-lg);padding:1.5rem;flex:1}
+.history-panel h3{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--ink-deep);margin-bottom:1rem}
+.h-entry{padding:.85rem 0;border-bottom:1px solid var(--cream-dim)}
+.h-entry:last-child{border-bottom:none;padding-bottom:0}
+.h-date{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#9490a0;margin-bottom:.5rem}
+.h-dims{display:flex;flex-wrap:wrap;gap:.35rem}
+.h-dim{font-size:.72rem;background:var(--ink-mist);color:var(--ink);border-radius:999px;padding:.2rem .65rem;font-weight:500}
+.history-empty{text-align:center;padding:2rem;color:#b0abc0;font-size:.875rem;font-weight:300}
+
+/* ─── JOURNAL ────────────────────────────────────────────── */
+#journal{background:var(--ink-deep);position:relative;overflow:hidden}
+#journal::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 10% 80%, rgba(45,31,163,.3) 0%, transparent 60%);
+}
+#journal .s-title{color:var(--white)}
+#journal .s-sub{color:var(--on-dark-2)}
+#journal .s-label{color:var(--gold)}
+.journal-layout{display:grid;gap:2rem;grid-template-columns:1fr 1.4fr;position:relative}
+@media(max-width:700px){.journal-layout{grid-template-columns:1fr}}
+.j-form-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-lg);padding:1.75rem}
+.j-form-card h3{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--white);margin-bottom:1.1rem}
+textarea{
+  width:100%;height:180px;padding:1rem;
+  font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:300;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--radius);color:var(--on-dark);
+  resize:none;line-height:1.65;
+  transition:border-color var(--dur),background var(--dur);
+}
+textarea::placeholder{color:rgba(232,226,245,.3)}
+textarea:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.08)}
+.btn-journal{
+  margin-top:.9rem;width:100%;
+  padding:.85rem;border:none;border-radius:var(--radius);cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;
+  background:var(--gold);color:var(--ink-deep);
+  transition:background var(--dur),transform var(--dur);
+}
+.btn-journal:hover{background:#c9a96e;transform:translateY(-1px)}
+.j-entries-col{display:flex;flex-direction:column;gap:.85rem}
+.j-entry{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--radius);padding:1.3rem 1.4rem;
+  transition:background var(--dur);
+}
+.j-entry:hover{background:rgba(255,255,255,.08)}
+.j-meta{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:.7rem;
+}
+.j-date{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);opacity:.75}
+.j-idx{font-size:.68rem;color:rgba(232,226,245,.25)}
+.j-text{font-size:.875rem;color:rgba(232,226,245,.7);white-space:pre-wrap;line-height:1.7;font-weight:300}
+.j-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:200px;color:rgba(232,226,245,.25);text-align:center;
+}
+.j-empty-icon{font-size:2.5rem;margin-bottom:.75rem;opacity:.4}
+.j-empty p{font-size:.85rem;font-weight:300}
+
+/* ─── EMAIL SIGNUP ───────────────────────────────────────── */
+#signup{
+  background:var(--ink-deep);position:relative;overflow:hidden;
+  padding:6rem 1.5rem;
+}
+#signup::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 50%, rgba(69,53,193,.25) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 70% 70%, rgba(184,154,90,.08) 0%, transparent 50%);
+}
+.signup-inner{
+  position:relative;max-width:680px;margin:0 auto;text-align:center;
+}
+.signup-inner h2{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(2rem,4.5vw,2.8rem);
+  color:var(--white);margin-bottom:1.2rem;
+}
+.signup-desc{
+  font-size:1.05rem;color:var(--on-dark-2);
+  max-width:520px;margin:0 auto 2.5rem;line-height:1.7;font-weight:300;
+}
+.signup-btn{
+  display:inline-block;
+  background:var(--gold);color:var(--ink-deep);
+  padding:.95rem 2.6rem;border-radius:999px;
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:.95rem;
+  text-decoration:none;letter-spacing:.02em;
+  transition:all .22s var(--ease);
+}
+.signup-btn:hover{
+  background:#c9a96e;transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(184,154,90,.4);
+}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer{
+  background:var(--ink-deep);border-top:1px solid rgba(255,255,255,.07);
+  text-align:center;padding:3rem 1.5rem;
+}
+.footer-brand{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--white)}
+.footer-brand em{color:var(--gold);font-style:italic}
+.footer-tagline{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--on-dark-2);margin-top:.5rem;font-weight:300}
+.footer-links{margin-top:1.5rem}
+.footer-links a{
+  color:var(--on-dark-2);text-decoration:none;
+  font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;
+  transition:color var(--dur);border-bottom:1px solid transparent;padding-bottom:2px;
+}
+.footer-links a:hover{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ─── FADE-IN ─────────────────────────────────────────────── */
+.fade-up{opacity:0;transform:translateY(20px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.fade-up.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <div class="nav-inner">
+    <div class="nav-brand">ANANNA <span>Embodiment</span></div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="goTo('home')" data-s="home">
+        <span class="ico">&#8962;</span><span class="lbl">Home</span>
+      </button>
+      <button class="nav-btn" onclick="goTo('learn')" data-s="learn">
+        <span class="ico">&#9632;</span><span class="lbl">Learn</span>
+      </button>
+      <button class="nav-btn" onclick="goTo('practice')" data-s="practice">
+        <span class="ico">&#9651;</span><span class="lbl">Practice</span>
+      </button>
+      <button class="nav-btn" onclick="goTo('compass')" data-s="compass">
+        <span class="ico">&#9670;</span><span class="lbl">Compass</span>
+      </button>
+      <button class="nav-btn" onclick="goTo('journal')" data-s="journal">
+        <span class="ico">&#9632;</span><span class="lbl">Journal</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── HERO ─────────────────────────────────────────────── -->
+<section id="home">
+  <div class="hero-ring ring-1"></div>
+  <div class="hero-ring ring-2"></div>
+  <div class="hero-ring ring-3"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">A men&#39;s embodiment practice</div>
+    <h1>The Art of<br><em>Intimate Touch</em></h1>
+    <p class="hero-tagline">Your daily companion for nervous system regulation, genuine connection, and deep embodied presence.</p>
+    <div class="stats-row">
+      <div class="stat-pill"><div class="stat-n" id="stat-exercises">0</div><div class="stat-l">Exercises</div></div>
+      <div class="stat-pill"><div class="stat-n" id="stat-checkins">0</div><div class="stat-l">Check&#8209;ins</div></div>
+      <div class="stat-pill"><div class="stat-n" id="stat-reflections">0</div><div class="stat-l">Reflections</div></div>
+      <div class="stat-pill"><div class="stat-n">6</div><div class="stat-l">Chapters</div></div>
+    </div>
+    <div class="cta-row">
+      <button class="btn-hero btn-hero-fill" onclick="goTo('learn')">Begin Practice</button>
+      <button class="btn-hero btn-hero-ghost" onclick="goTo('compass')">Open Compass</button>
+    </div>
+  </div>
+</section>
+
+<!-- ─── LEARN ─────────────────────────────────────────────── -->
+<section id="learn">
+  <div class="s-inner">
+    <div class="s-header fade-up">
+      <span class="s-label">The material</span>
+      <h2 class="s-title">Six Chapters on<br>Embodied Connection</h2>
+      <p class="s-sub">Expand each chapter to explore the core concepts and key insights.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="acc-list fade-up" id="acc-list"></div>
+  </div>
+</section>
+
+<!-- ─── PRACTICE ──────────────────────────────────────────── -->
+<section id="practice">
+  <div class="s-inner">
+    <div class="s-header fade-up">
+      <span class="s-label">Daily practice</span>
+      <h2 class="s-title">Six Exercises to<br>Build With</h2>
+      <p class="s-sub">Mark each exercise complete as you work through them.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="ex-grid fade-up" id="ex-grid"></div>
+  </div>
+</section>
+
+<!-- ─── COMPASS ───────────────────────────────────────────── -->
+<section id="compass">
+  <div class="s-inner">
+    <div class="s-header fade-up">
+      <span class="s-label">Intimacy compass</span>
+      <h2 class="s-title">Where Are You<br>Right Now?</h2>
+      <p class="s-sub">A daily somatic check-in across five dimensions of embodied presence.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="compass-layout fade-up">
+      <div class="compass-sliders">
+        <h3>Current State</h3>
+        <p>Rate how you feel across five dimensions</p>
+        <div id="sliders"></div>
+        <button class="btn-checkin" onclick="saveCompass()">Save Check&#8209;In</button>
+      </div>
+      <div class="compass-right">
+        <div class="radar-card">
+          <div class="radar-card-title">Your Embodiment Map</div>
+          <svg class="radar" id="radar-svg" width="260" height="260" viewBox="-130 -130 260 260"></svg>
+        </div>
+        <div class="history-panel" id="history-panel">
+          <h3>Recent Check&#8209;Ins</h3>
+          <div id="compass-history"><div class="history-empty">No check-ins yet.<br>Save your first one above.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── JOURNAL ───────────────────────────────────────────── -->
+<section id="journal">
+  <div class="s-inner">
+    <div class="s-header fade-up">
+      <span class="s-label">Reflection journal</span>
+      <h2 class="s-title">What Did You<br>Notice Today?</h2>
+      <p class="s-sub">Private reflections on intimacy, touch, and connection. Stored locally on your device.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="journal-layout fade-up">
+      <div class="j-form-card">
+        <h3>New Entry</h3>
+        <textarea id="j-input" placeholder="What did you notice about intimacy, touch, or connection today? What felt alive? What was challenging?"></textarea>
+        <button class="btn-journal" onclick="saveJournal()">Save Reflection</button>
+      </div>
+      <div id="j-entries-col"><div class="j-empty"><div class="j-empty-icon">&#9632;</div><p>Your reflections will<br>appear here.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── EMAIL SIGNUP ──────────────────────────────────────── -->
+<section id="signup">
+  <div class="signup-inner">
+    <h2>Stay Connected</h2>
+    <p class="signup-desc">
+      Get insights, practices, and reflections on intimacy, presence, and connection delivered to your inbox.
+    </p>
+    <a href="http://eepurl.com/jBM642" target="_blank" class="signup-btn">Join Our Community</a>
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-brand">ANANNA <em>Embodiment</em></div>
+  <div class="footer-tagline">Safety &nbsp;&#183;&nbsp; Intimacy &nbsp;&#183;&nbsp; Connection &nbsp;&#183;&nbsp; Deep Pleasure</div>
+  <div class="footer-links">
+    <a href="http://eepurl.com/jBM642" target="_blank">Join Email List</a>
+  </div>
+</footer>
+
+<script>
+/* ─── DATA ──────────────────────────────────────────────── */
+var CHAPTERS = [
+  { id:1, title:"What is Missing in the 2026 Bedroom", sub:"The Foundation",
+    summary:"Understanding the post-romance winter landscape. Why safety, intimacy, connection, and deep pleasure became non-negotiable for modern women.",
+    keys:["Women want to love men again, but on new terms","The more pleasure she feels, the better for both of you","This is about choice, not obligation"] },
+  { id:2, title:"Safety First", sub:"Nervous System Regulation",
+    summary:"Safety is not the opposite of desire. It is the foundation. Learn how her nervous system decides if you're safe before your words even matter.",
+    keys:["Your nervous system regulates hers","Pacing matters more than technique","Intentional slowness is not hesitation"] },
+  { id:3, title:"Intimacy", sub:"The Power of Doing Nothing",
+    summary:"The moments before sex matter more than the sex itself. Eye contact, hand-holding, and presence without agenda build deeper connection.",
+    keys:["Intimacy is the main event; sex is what happens after","Touch without expectation unlocks everything","Men can set boundaries too"] },
+  { id:4, title:"Spheres of Touch", sub:"Building Trust Through Zones",
+    summary:"Not all touch is equal. Learn to earn access to intimate zones by respecting neutral territory first.",
+    keys:["Start neutral, build toward intimate","Read her regulation signals constantly","This applies to long-term relationships too: never assume"] },
+  { id:5, title:"Movement Methods", sub:"Pressure, Speed, Rhythm",
+    summary:"How you touch matters as much as where. Master the three qualities of touch and specific techniques that work.",
+    keys:["Vary pressure, speed, and rhythm intentionally","Slow touch builds tension and anticipation","Be unpredictable in delightful ways"] },
+  { id:6, title:"Receiving Touch", sub:"The Missing Skill",
+    summary:"Your ability to receive touch is as important as giving it. Learn to be vulnerable enough to let her touch truly matter.",
+    keys:["Your response teaches her whether to keep touching you","Receiving requires vulnerability","Make sound, breathe, stay present"] }
+];
+
+var EXERCISES = [
+  { id:1, ch:2, title:"Nervous System Body Scan", dur:"5 minutes",
+    desc:"Check in with your body's regulation state before intimate moments.",
+    steps:["Find a quiet moment alone","Close your eyes, take 3 deep breaths","Scan head to toe: where do you feel tension?","Notice your breath: shallow or deep?","Rate your regulation: anxious (1-10) or calm?","Practice calming breath: 4 in, 6 out, repeat 5x"] },
+  { id:2, ch:3, title:"5-Minute Eye Contact", dur:"5 minutes",
+    desc:"Build intimacy through sustained, vulnerable eye contact with your partner.",
+    steps:["Sit facing your partner, knees touching","Set a timer for 5 minutes","Look into each other's eyes without speaking","Notice the urge to laugh or look away and stay","Breathe together","After: share one word about how you feel"] },
+  { id:3, ch:4, title:"Touch Mapping", dur:"15 minutes",
+    desc:"Explore which areas feel safe versus intimate, and communicate openly.",
+    steps:["Ask: 'Can we do a touch mapping exercise?'","Have her lie down comfortably","Touch different areas slowly: arm, shoulder, neck","Ask: 'How does this feel? Safe? Intimate?'","Take mental notes of her responses","Switch roles: let her touch you"] },
+  { id:4, ch:5, title:"Pressure, Speed, Rhythm Practice", dur:"10 minutes",
+    desc:"Practice varying touch qualities on your own forearm.",
+    steps:["Use your forearm as practice ground","Light: barely there, fingertips only","Medium: full palm, grounding pressure","Firm: kneading muscle, deliberate","Vary speed: slow drag vs. quick movement","Combine qualities and notice what resonates"] },
+  { id:5, ch:6, title:"Vulnerability Journal", dur:"10 minutes",
+    desc:"Explore your relationship with receiving touch and pleasure.",
+    prompts:["When someone touches me, I usually feel...","The last time I fully received touch without redirecting was...","I struggle to receive because...","What would surrender to touch feel like?","One thing I could do to receive better:"] },
+  { id:6, ch:3, title:"Non-Sexual Closeness", dur:"20 minutes",
+    desc:"Practice intimacy with no agenda and no escalation.",
+    steps:["Ask: 'Can we just be close for 20 minutes?'","Clarify: no agenda, just closeness","Choose: lap sitting, spooning, or face-to-face","Set a timer","Breathe together, hold each other, be present","Notice the urge to escalate and resist it"] }
+];
+
+var DIMS = ['vulnerability','connection','presence','pleasure','safety'];
+var DIM_LABELS = {vulnerability:'Vulnerability',connection:'Connection',presence:'Presence',pleasure:'Pleasure',safety:'Safety'};
+
+/* ─── STATE ──────────────────────────────────────────────── */
+var S = { done:[], history:[], journal:[], compass:{vulnerability:5,connection:5,presence:5,pleasure:5,safety:5} };
+
+function load() {
+  try { var d=JSON.parse(localStorage.getItem('ananna2')); if(d){S.done=d.done||[];S.history=d.history||[];S.journal=d.journal||[];} } catch(e){}
+}
+function save() {
+  localStorage.setItem('ananna2',JSON.stringify({done:S.done,history:S.history,journal:S.journal}));
+}
+
+/* ─── CHAPTERS ───────────────────────────────────────────── */
+function renderChapters() {
+  var el=document.getElementById('acc-list');
+  el.innerHTML = CHAPTERS.map(function(c) {
+    return '<div class="acc-item" id="ac'+c.id+'">'+
+      '<button class="acc-trigger" onclick="toggleAcc('+c.id+')">'+
+        '<div class="acc-heading">'+
+          '<div class="acc-num">0'+c.id+'</div>'+
+          '<div class="acc-texts">'+
+            '<div class="acc-title">'+c.title+'</div>'+
+            '<div class="acc-sub">'+c.sub+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="acc-chevron" id="achv'+c.id+'">&#8964;</div>'+
+      '</button>'+
+      '<div class="acc-body" id="ab'+c.id+'">'+
+        '<div class="acc-body-inner">'+
+          '<p class="acc-summary">'+c.summary+'</p>'+
+          '<div class="takeaways"><strong>Key Insights</strong><ul>'+
+            c.keys.map(function(k){return '<li>'+k+'</li>';}).join('')+
+          '</ul></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+var openAcc=null;
+function toggleAcc(id) {
+  if(openAcc&&openAcc!==id){closeAcc(openAcc);}
+  var body=document.getElementById('ab'+id);
+  var item=document.getElementById('ac'+id);
+  var chv=document.getElementById('achv'+id);
+  var isOpen=item.classList.toggle('open');
+  body.style.maxHeight=isOpen?body.scrollHeight+40+'px':'0';
+  chv.innerHTML=isOpen?'&#8963;':'&#8964;';
+  openAcc=isOpen?id:null;
+}
+function closeAcc(id){
+  var body=document.getElementById('ab'+id);
+  var item=document.getElementById('ac'+id);
+  var chv=document.getElementById('achv'+id);
+  item.classList.remove('open');
+  body.style.maxHeight='0';
+  chv.innerHTML='&#8964;';
+}
+
+/* ─── EXERCISES ──────────────────────────────────────────── */
+function renderExercises() {
+  var el=document.getElementById('ex-grid');
+  el.innerHTML=EXERCISES.map(function(ex) {
+    var isDone=S.done.indexOf(ex.id)>-1;
+    var inner=ex.steps
+      ?ex.steps.map(function(s,i){return '<div class="ex-step"><div class="step-n">'+(i+1)+'</div><span>'+s+'</span></div>';}).join('')
+      :ex.prompts.map(function(p){return '<div class="ex-prompt">'+p+'</div>';}).join('');
+    return '<div class="ex-card">'+
+      '<div class="ex-tag">Ch. '+ex.ch+'</div>'+
+      '<div class="ex-title">'+ex.title+'</div>'+
+      '<div class="ex-dur">'+ex.dur+'</div>'+
+      '<p class="ex-desc">'+ex.desc+'</p>'+
+      '<div class="ex-steps">'+inner+'</div>'+
+      '<button class="done-btn'+(isDone?' done':'')+'" id="exb'+ex.id+'" onclick="toggleDone('+ex.id+')">'+
+        '<span class="chk">'+(isDone?'&#10003;':'')+'</span>'+(isDone?'Completed':'Mark Complete')+
+      '</button>'+
+    '</div>';
+  }).join('');
+}
+function toggleDone(id) {
+  var i=S.done.indexOf(id);
+  if(i>-1)S.done.splice(i,1);else S.done.push(id);
+  save();
+  var done=S.done.indexOf(id)>-1;
+  var btn=document.getElementById('exb'+id);
+  btn.className='done-btn'+(done?' done':'');
+  btn.innerHTML='<span class="chk">'+(done?'&#10003;':'')+'</span>'+(done?'Completed':'Mark Complete');
+  updateStats();
+}
+
+/* ─── COMPASS ────────────────────────────────────────────── */
+function renderSliders() {
+  var el=document.getElementById('sliders');
+  el.innerHTML=DIMS.map(function(d) {
+    return '<div class="slider-block">'+
+      '<div class="slider-label"><span>'+DIM_LABELS[d]+'</span><span class="slider-val" id="sv-'+d+'">'+S.compass[d]+'/10</span></div>'+
+      '<input type="range" min="0" max="10" value="'+S.compass[d]+'" oninput="onSlide(\''+d+'\',this.value)">'+
+    '</div>';
+  }).join('');
+  drawRadar();
+}
+function onSlide(d,v) {
+  S.compass[d]=parseInt(v);
+  document.getElementById('sv-'+d).textContent=v+'/10';
+  drawRadar();
+}
+function drawRadar() {
+  var svg=document.getElementById('radar-svg');
+  var R=100;
+  var n=DIMS.length;
+  var angs=DIMS.map(function(_,i){return (i/n)*2*Math.PI-Math.PI/2;});
+  function pt(r,a){return [r*Math.cos(a),r*Math.sin(a)];}
+  function poly(r,extra){
+    return angs.map(function(a){return pt(r,a).join(',');}).join(' ');
+  }
+  var rings=[20,40,60,80,100].map(function(r){
+    return '<polygon points="'+poly(r)+'" fill="none" stroke="rgba(232,226,245,.1)" stroke-width="1"/>';
+  }).join('');
+  var axes=angs.map(function(a){
+    var p=pt(R,a);
+    return '<line x1="0" y1="0" x2="'+p[0]+'" y2="'+p[1]+'" stroke="rgba(232,226,245,.12)" stroke-width="1"/>';
+  }).join('');
+  var labels=DIMS.map(function(d,i){
+    var p=pt(R+22,angs[i]);
+    return '<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="rgba(232,226,245,.55)" font-family="DM Sans,sans-serif">'+DIM_LABELS[d]+'</text>';
+  }).join('');
+  var dataPts=DIMS.map(function(d,i){return pt((S.compass[d]/10)*R,angs[i]).join(',');}).join(' ');
+  var dots=DIMS.map(function(d,i){
+    var p=pt((S.compass[d]/10)*R,angs[i]);
+    return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="#b89a5a"/>';
+  }).join('');
+  svg.innerHTML=rings+axes+labels+
+    '<polygon points="'+dataPts+'" fill="rgba(184,154,90,.25)" stroke="#b89a5a" stroke-width="1.5"/>'+dots;
+}
+function saveCompass() {
+  var e={ts:Date.now(),date:new Date().toLocaleDateString()};
+  DIMS.forEach(function(d){e[d]=S.compass[d];});
+  S.history.unshift(e);save();
+  DIMS.forEach(function(d){S.compass[d]=5;});
+  renderSliders();renderHistory();updateStats();
+}
+function renderHistory() {
+  var el=document.getElementById('compass-history');
+  if(!S.history.length){el.innerHTML='<div class="history-empty">No check-ins yet.<br>Save your first one above.</div>';return;}
+  el.innerHTML=S.history.slice(0,5).map(function(e){
+    var dims=DIMS.map(function(d){return '<span class="h-dim">'+DIM_LABELS[d]+': '+e[d]+'</span>';}).join('');
+    return '<div class="h-entry"><div class="h-date">'+e.date+'</div><div class="h-dims">'+dims+'</div></div>';
+  }).join('');
+}
+
+/* ─── JOURNAL ────────────────────────────────────────────── */
+function saveJournal() {
+  var txt=document.getElementById('j-input').value.trim();
+  if(!txt)return;
+  S.journal.unshift({id:Date.now(),text:txt,date:new Date().toLocaleDateString()});
+  save();document.getElementById('j-input').value='';
+  renderJournal();updateStats();
+}
+function renderJournal() {
+  var el=document.getElementById('j-entries-col');
+  if(!S.journal.length){
+    el.innerHTML='<div class="j-empty"><div class="j-empty-icon">&#9632;</div><p>Your reflections will<br>appear here.</p></div>';return;
+  }
+  el.innerHTML='<div class="j-entries-col">'+S.journal.map(function(e,i){
+    return '<div class="j-entry">'+
+      '<div class="j-meta"><span class="j-date">'+e.date+'</span><span class="j-idx">#'+(S.journal.length-i)+'</span></div>'+
+      '<div class="j-text">'+e.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+/* ─── STATS & NAV ────────────────────────────────────────── */
+function updateStats() {
+  document.getElementById('stat-exercises').textContent=S.done.length;
+  document.getElementById('stat-checkins').textContent=S.history.length;
+  document.getElementById('stat-reflections').textContent=S.journal.length;
+}
+function goTo(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
+
+var SECS=['home','learn','practice','compass','journal'];
+function updateNav(){
+  var y=window.scrollY+80,active='home';
+  SECS.forEach(function(id){var el=document.getElementById(id);if(el&&el.offsetTop<=y)active=id;});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.toggle('active',b.dataset.s===active);});
+}
+window.addEventListener('scroll',updateNav,{passive:true});
+
+/* ─── FADE-IN OBSERVER ───────────────────────────────────── */
+function initFade(){
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+  },{threshold:0.1});
+  document.querySelectorAll('.fade-up').forEach(function(el){obs.observe(el);});
+}
+
+/* ─── INIT ───────────────────────────────────────────────── */
+load();
+renderChapters();
+renderExercises();
+renderSliders();
+renderHistory();
+renderJournal();
+updateStats();
+initFade();
+</script>
+</body>
+</html>
