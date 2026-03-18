@@ -133,7 +133,7 @@ nav {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.15;
+  opacity: 0.18;
   pointer-events: none;
   z-index: 0;
 }
@@ -706,29 +706,84 @@ footer {
   border-bottom-color: var(--gold);
 }
 
-/* Responsive */
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--navy);
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 @media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
+
   .nav-links {
-    gap: 1rem;
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(245, 241, 232, 0.98);
+    backdrop-filter: blur(12px);
+    flex-direction: column;
+    padding: 1rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--cream-dark);
+    gap: 0;
   }
-  
+
+  .nav-links.open {
+    display: flex;
+  }
+
   .nav-link {
-    font-size: 0.8rem;
+    font-size: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--cream-dark);
+    text-align: left;
+    width: 100%;
   }
-  
+
+  .nav-link:last-child {
+    border-bottom: none;
+  }
+
   .hero {
     min-height: 60vh;
     padding: 6rem 1.5rem 3rem;
   }
-  
+
   .section {
     padding: 4rem 1.5rem;
   }
-  
+
   .practices-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .compass-card,
   .journal-card {
     padding: 2rem 1.5rem;
@@ -743,12 +798,15 @@ footer {
     <div class="nav-logo">
       Intimacy for Men <span>by ANANNA</span>
     </div>
-    <div class="nav-links">
+    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
       <button class="nav-link" onclick="scrollToSection('home')">Home</button>
       <button class="nav-link" onclick="scrollToSection('practices')">Practices</button>
       <button class="nav-link" onclick="scrollToSection('journal')">Journal</button>
       <a class="nav-link" href="https://ananna.gumroad.com/l/efpxh" target="_blank">Shop</a>
-      <a class="nav-link" href="http://eepurl.com/jBO98s" target="_blank">Newsletter</a>
+      <a class="nav-link" href="https://eepurl.com/jBO98s" target="_blank">Newsletter</a>
     </div>
   </div>
 </nav>
@@ -984,7 +1042,7 @@ footer {
     <p class="signup-description">
       Get new guides before anyone else, subscriber-only practices, and insights on intimacy that go deeper than technique.
     </p>
-    <a href="http://eepurl.com/jBO98s" target="_blank" class="signup-btn">Subscribe</a>
+    <a href="https://eepurl.com/jBO98s" target="_blank" class="signup-btn">Subscribe</a>
   </div>
 </section>
 
@@ -992,7 +1050,7 @@ footer {
   <div class="footer-brand">Intimacy for Men <span style="color: var(--gold); font-size: 0.9rem; font-style: italic;">by ANANNA</span></div>
   <div class="footer-tagline">Safety · Intimacy · Connection · Presence</div>
   <div class="footer-links">
-    <a href="http://eepurl.com/jBO98s" target="_blank">Join Email List</a>
+    <a href="https://eepurl.com/jBO98s" target="_blank">Join Email List</a>
   </div>
 </footer>
 
@@ -1247,7 +1305,16 @@ function renderJournal() {
 }
 
 // Navigation
+function toggleNav() {
+  const nav = document.getElementById('nav-links');
+  const btn = document.getElementById('hamburger');
+  nav.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
 function scrollToSection(id) {
+  document.getElementById('nav-links').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
   const element = document.getElementById(id);
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' });
